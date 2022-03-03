@@ -21,9 +21,9 @@ export default class AddTask extends Component {
             description: this.state.description,
             date: this.state.date,
         }
-        
+
         this.props.onSave && this.props.onSave(newTask)
-        this.setState({...initialState})
+        this.setState({ ...initialState })
     }
 
     //metodo para pegar data

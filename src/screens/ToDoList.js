@@ -8,25 +8,17 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+const initialState = {
+    showDoneTasks: true,
+    showAddTask: false,
+    visibleTasks: [],
+    tasks: [],
+}
+
 export default class ToDoList extends Component {
     //state criado para a lista de tasks
     state = {
-        showDoneTasks: true,
-        showAddTask: false,
-        visibleTasks: [],
-
-        tasks: [{
-            id: Math.random(),
-            description: 'Comprar livro',
-            estimateAt: new Date(),
-            doneAt: new Date(),
-        },
-        {
-            id: Math.random(),
-            description: 'Ler livro',
-            estimateAt: new Date(),
-            doneAt: null,
-        }]
+        ...initialState
     }
 
     //metodo de ciclo de vida de componente
@@ -60,17 +52,17 @@ export default class ToDoList extends Component {
     //os items pending serão filtrados no filter da função const
     filterTasks = () => {
         let visibleTasks = null
-        if(this.state.showDoneTasks) {
+        if (this.state.showDoneTasks) {
             visibleTasks = [...this.state.tasks]
         } else {
             const pending = task => task.doneAt === null
             visibleTasks = this.state.tasks.filter(pending)
         }
-        this.setState({visibleTasks})
+        this.setState({ visibleTasks })
     }
 
     addTask = newTask => {
-        if(!newTask.description || !newTask.description.trim()){
+        if (!newTask.description || !newTask.description.trim()) {
             Alert.alert('Dados Inválidos', 'Descrição inválida')
             return
         }
@@ -81,7 +73,7 @@ export default class ToDoList extends Component {
             estimateAt: newTask.date,
             doneAt: null,
         })
-        this.setState({tasks, showAddTask: false}, this.filterTasks)
+        this.setState({ tasks, showAddTask: false }, this.filterTasks)
     }
 
     //metodo para deletar tarefas
@@ -101,8 +93,8 @@ export default class ToDoList extends Component {
         return (
             <View style={styles.container}>
                 <AddTask isVisible={this.state.showAddTask}
-                onCancel={() => this.setState({showAddTask: false})}
-                onSave={this.addTask} />
+                    onCancel={() => this.setState({ showAddTask: false })}
+                    onSave={this.addTask} />
                 <ImageBackground source={todayImage}
                     style={styles.background}>
                     <View style={styles.iconBar}>
@@ -120,11 +112,11 @@ export default class ToDoList extends Component {
                 <View style={styles.toDoList}>
                     <FlatList data={this.state.visibleTasks}
                         keyExtractor={item => `${item.id}`}
-                        renderItem={({ item }) => <Task {...item} toggleTask={this.toggleTask}  onDelete={this.deleteTask}/>} />
+                        renderItem={({ item }) => <Task {...item} toggleTask={this.toggleTask} onDelete={this.deleteTask} />} />
                 </View>
                 <TouchableOpacity style={styles.addButton}
-                activeOpacity={0.7}
-                onPress={() => this.setState({showAddTask: true})}>
+                    activeOpacity={0.7}
+                    onPress={() => this.setState({ showAddTask: true })}>
                     <Icon name='plus' size={20} color={commonStyles.colors.secondary} />
                 </TouchableOpacity>
             </View>
