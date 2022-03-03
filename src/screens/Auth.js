@@ -23,15 +23,15 @@ export default class Auth extends Component {
     //Metodo para alterar propriedade do botão entrar/registrar
     singInOrSingUp = () => {
         if (this.state.stageNewUser) {
-            this.singup()
+            this.signup()
         } else {
             this.signin()
         }
     }
 
-    singup = async () => {
+    signup = async () => {
         try {
-            await axios.post(`${server}/singup`, {
+            await axios.post(`${server}/signup`, {
                 name: this.state.name,
                 email: this.state.email,
                 password: this.state.password,

@@ -7,6 +7,8 @@ import todayImage from '../../assets/imgs/today.jpg';
 import moment from 'moment';
 import 'moment/locale/pt-br';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios'
+import { server, showError } from '../common'
 
 const initialState = {
     showDoneTasks: true,
@@ -24,18 +26,33 @@ export default class ToDoList extends Component {
     //metodo de ciclo de vida de componente
     componentDidMount = () => {
         this.filterTasks()
+        this.loadTasks()
+    }
+
+    //Metodo para carregar as tarefas do backend
+    //servidor recebe date como parametro de maxDate
+    //res.data retorna o que o servidor enviar
+    loadTasks = async () => {
+        try {
+            const maxDate = moment().endOf('day').format('YYYY-MM-DD 23:59:59')
+            const res = await axios.get(`${server}/tasks?date=${maxDate}`)
+            this.setState({ tasks: res.data }, this.filterTasks)
+        } catch (e) {
+
+        }
     }
 
     //função para alterar o estado da task entre aberto e concluido
     //criar uma copia do array tasks e percorre cada item no foreach
     //procura cada task que possui os ids iguais, se tiver vazio continua, se não tiver recebe nova data
-    toggleTask = taskId => {
-        const tasks = [...this.state.tasks]
-        tasks.forEach(task => {
-            if (task.id === taskId) {
-                task.doneAt = task.doneAt ? null : new Date()
-            }
-        })
+    toggleTask = async taskId => {
+
+        try {
+            await axios.put(`${server}/tasks/${taskId}/toggle`)
+            this.loadTasks()
+        } catch (e) {
+            showError(e)
+        }
 
         //seta o novo objeto na tela
         this.setState({ tasks }, this.filterTasks)
@@ -61,25 +78,32 @@ export default class ToDoList extends Component {
         this.setState({ visibleTasks })
     }
 
-    addTask = newTask => {
+    addTask = async newTask => {
         if (!newTask.description || !newTask.description.trim()) {
             Alert.alert('Dados Inválidos', 'Descrição inválida')
             return
         }
-        const tasks = [...this.state.tasks]
-        tasks.push({
-            id: Math.random(),
-            description: newTask.description,
-            estimateAt: newTask.date,
-            doneAt: null,
-        })
-        this.setState({ tasks, showAddTask: false }, this.filterTasks)
+
+        try {
+            await axios.post(`${server}/tasks`, {
+                description: newTask.description,
+                estimateAt: newTask.date,
+            })
+            this.setState({ showAddTask: false }, this.loadTasks)
+        } catch (e) {
+            showError(e)
+        }
+
     }
 
     //metodo para deletar tarefas
-    deleteTask = id => {
-        const tasks = this.state.tasks.filter(task => task.id !== id)
-        this.setState({ tasks }, this.filterTasks)
+    deleteTask = async taskId => {
+        try {
+            await axios.delete(`${server}/tasks/${taskId}`)
+            this.loadTasks()
+        } catch (e) {
+            showError(e)
+        }
     }
 
     render() {
@@ -105,7 +129,7 @@ export default class ToDoList extends Component {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.titleBar}>
-                        <Text style={styles.title}>Hoje</Text>
+                        <Text style={styles.title}>{this.props.title}</Text>
                         <Text style={styles.subTitle}>{today}</Text>
                     </View>
                 </ImageBackground>
